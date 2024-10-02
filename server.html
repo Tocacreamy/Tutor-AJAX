@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>learn AJAX</title>
+</head>
+<body>
+    <div id="data">
+        <h1>Data Buku</h1>
+        <div id="list_data"></div>
+    </div>
+    <div id="popup">
+    </div>
+    <button type="button" id="start">Start</button>
+    <button type="button" id="add" >add</button>
+    <button type="button" id="patch" form="tehForm">patch</button>
+    <button type="button" id="update" >update</button>
+    <button type="button" id="delete">delete</button>
+    
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script>
+        $("#start").click(function (e) { 
+            e.preventDefault();
+            getData();
+        });
+        $("#add").on("click", isiDulu);
+        $("#patch").on("click", patchData);
+        $("#update").on("click", updateData);
+        $("#delete").on("click", deleteData);
+
+        function getData(){
+            $.get("http://localhost:3000/books",
+                function (data, status) {
+                    var text = "";
+                    for (x in data){
+                        let judul = data[x]['title'];
+                        let content = data[x]['content']
+                        text += `<li/>Tittle :${judul}<br/>
+                        &nbsp  content :${content}</li> 
+                        <input type="radio">`
+                    }
+                    text += `<ul/>`
+                    
+                    $("#list_data").html(text);
+                }
+            );
+        }
+
+        function select(){
+            
+        }
+
+
+        function isiDulu() {
+            $("#popup").html(`<form action="" style="display: flex; flex-direction: column;" id="tehForm">
+            <div style="display: flex;">
+            <h3>Add Form</h3><button type="button" id="back" style="height: 25px; align-self: center; margin-left: 20px;">X</button>
+            </div>
+            <label for="id">id</label>
+            <input type="text" id="id" style="width: 100px;" required>
+            <label for="title">title</label>
+            <input type="text" id="title" style="width: 100px;" required>
+            <label for="content">content</label>
+            <input type="text" id="content" style="width: 100px;" required>
+            <button type="button" id="submit" form="tehForm" style="width: 100px;">submit</button>
+        </form><br/>`);
+            let theDisplay = $("#popup").css("display");
+            $("#popup").css("display", "flex")
+            $("#back").on("click", ()=> {
+                $("#popup").css("display", "none")
+            } );
+            $("#submit").on("click",addData);
+
+        }
+        
+        function addData(){
+            $("#popup").css("display", "none");
+            var data ={}
+            data.id = $("#id").val();
+            data.title = $("#title").val();
+            data.content = $("#content").val();
+
+
+            // var thedata = {
+            //     "id": "6",
+            //     "title": "Mantab",
+            //     "content": "Story about Mantab",
+            //     "author": "red mantis"
+            // }
+            
+            data = JSON.stringify(data)
+            $.post("http://localhost:3000/books", data,
+                function (data) {
+                    getData()
+                    
+                });
+        }
+        //update beberapa data di id 
+        function patchData(){
+            var id = 2;
+            var theData = JSON.stringify({"title": "Ganti judul Patch"});
+            var link = "http://localhost:3000/books/"+id;
+            $.ajax({
+                type: "PATCH",
+                url: link,
+                data: theData,
+                success: function (response) {
+                    alert("beberapa data diperbarui");
+                    getData();
+                },
+                error: (error)=>{
+                    console.error("eror bro : ",error);
+                }
+
+            });
+        }
+        //harus update semua data di id
+        function updateData() {
+            const id = 2;
+            const theData = JSON.stringify({"title": "Ganti judul update"});
+            const link = "http://localhost:3000/books/"+id;
+            $.ajax({
+                type: "PUT",
+                url: link,
+                data: theData,
+                success: function (response) {
+                    alert(" data diperbarui");
+                    getData();
+                },error: (error)=>{
+                    console.error("eror bro : ",error);
+                }
+
+            });
+          }
+
+          function deleteData() {
+            var id = $("#id").val();
+            const link = "http://localhost:3000/books/"+id;
+            $.ajax({
+                type: "DELETE",
+                url: link,
+                success: function (response) {
+                    alert(`data ${id} berhasil dihapus`);
+                    getData();
+                },error: (error)=>{
+                    console.error("eror bro : ",error);
+                    alert(error);
+                }
+
+            });
+          }
+
+    </script>
+</body>
+</html>
